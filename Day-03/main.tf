@@ -1,6 +1,13 @@
-# This terraform configuration file creates an S3 bucket in AWS
+# Terraform configuration to create an S3 bucket with remote state management
 
 terraform {
+    backend "s3" {
+    bucket = "pavan-terraform-state-bucket-1312"
+    key    = "dev/terraform.tfstate"
+    region = "ap-south-1"
+    encrypt = true
+    use_lockfile = false
+  }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
