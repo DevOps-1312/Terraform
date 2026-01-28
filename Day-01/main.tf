@@ -1,3 +1,6 @@
+# First terraform configuration file
+# It creates a VPC in AWS
+
 terraform {
   required_providers {
     aws = {
