@@ -32,3 +32,9 @@ variable "associate_public_ip" {
   type        = bool
   default     = true
 }
+
+variable "cidr_block" {
+  description = "CIDR block for the VPC"
+  type        = list(string)
+  default     = ["10.0.0.0/16", "192.168.0.0/8", "172.16.0.0/12"]
+}
