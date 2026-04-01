@@ -4,8 +4,8 @@
 resource "aws_instance" "sample_instance" {
   count = var.instance_count
   ami = "resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
-  instance_type = "t2.micro"
-  region = var.aws_region
+  instance_type = var.allowed_vm_types[0] # using the first allowed instance type from the list
+  region = tolist(var.allowed_regions)[2] # using the first allowed region from the set
   
   monitoring = var.enable_monitoring
   associate_public_ip_address = var.associate_public_ip
