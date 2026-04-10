@@ -162,3 +162,62 @@ resource "aws_instance" "app_with_sg" {
     ]
   }
 }
+
+# Example 8: Combining Multiple Lifecycle Rules
+# Use Case: DynamoDB table with comprehensive protections (SIMPLE EXAMPLE)
+# ==============================
+
+# This example shows how to combine multiple lifecycle rules on a single resource
+# DynamoDB is used here because it's simple and doesn't require VPC setup
+
+resource "aws_dynamodb_table" "critical_app_data" {
+  name         = "${var.Environment}-app-data-table"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "id"
+
+  attribute {
+    name = "id"
+    type = "S"
+  }
+
+  tags = merge(
+    var.tags,
+    {
+      Name        = "Critical Application Data"
+      Demo        = "multiple_lifecycle_rules"
+      DataType    = "Critical"
+      Environment = var.Environment
+    }
+  )
+
+  # Multiple Lifecycle Rules Combined for Production Protection
+  lifecycle {
+    # Rule 1: Prevent accidental deletion
+    # This protects the table from being destroyed accidentally
+    # prevent_destroy = true  # COMMENTED OUT TO ALLOW DESTRUCTION
+
+    # Rule 2: Create new resource before destroying old one
+    # Ensures zero downtime if table needs to be recreated
+    create_before_destroy = true
+
+    # Rule 3: Ignore changes to certain attributes
+    # Allow AWS to manage read/write capacity for auto-scaling
+    ignore_changes = [
+      # Ignore read/write capacity if using auto-scaling
+      read_capacity,
+      write_capacity,
+    ]
+
+    # Rule 4: Validate before creation
+    precondition {
+      condition     = contains(keys(var.tags), "Environment")
+      error_message = "Critical table must have Environment tag for compliance!"
+    }
+
+    # Rule 5: Validate after creation
+    postcondition {
+      condition     = self.billing_mode == "PAY_PER_REQUEST" || self.billing_mode == "PROVISIONED"
+      error_message = "Billing mode must be either PAY_PER_REQUEST or PROVISIONED!"
+    }
+  }
+}
